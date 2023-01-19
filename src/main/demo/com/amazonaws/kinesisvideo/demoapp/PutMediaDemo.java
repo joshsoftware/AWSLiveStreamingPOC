@@ -1,11 +1,8 @@
 package com.amazonaws.kinesisvideo.demoapp;
 
-import com.amazonaws.kinesisvideo.demoapp.auth.AuthHelper;
-import com.amazonaws.services.kinesisvideo.AmazonKinesisVideo;
-import com.amazonaws.services.kinesisvideo.AmazonKinesisVideoAsyncClient;
-import com.amazonaws.services.kinesisvideo.AmazonKinesisVideoPutMedia;
-import com.amazonaws.services.kinesisvideo.AmazonKinesisVideoPutMediaClient;
-import com.amazonaws.services.kinesisvideo.PutMediaAckResponseHandler;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.kinesisvideo.*;
 import com.amazonaws.services.kinesisvideo.model.AckEvent;
 import com.amazonaws.services.kinesisvideo.model.FragmentTimecodeType;
 import com.amazonaws.services.kinesisvideo.model.GetDataEndpointRequest;
@@ -45,7 +42,7 @@ public final class PutMediaDemo {
     private static final String PUT_MEDIA_API = "/putMedia";
 
     /* the name of the stream */
-    private static final String STREAM_NAME = "my-stream";
+    private static final String STREAM_NAME = "test_video_stream";
 
     /* sample MKV file */
     private static final String MKV_FILE_PATH = "src/main/resources/data/mkv/clusters.mkv";
@@ -62,8 +59,9 @@ public final class PutMediaDemo {
     private PutMediaDemo() { }
     public static void main(final String[] args) throws Exception {
         final AmazonKinesisVideo frontendClient = AmazonKinesisVideoAsyncClient.builder()
-                .withCredentials(AuthHelper.getSystemPropertiesCredentialsProvider())
-                .withRegion(DEFAULT_REGION)
+//                .withCredentials(AuthHelper.getSystemPropertiesCredentialsProvider())
+                .withCredentials(new ProfileCredentialsProvider("ashvini"))
+                .withRegion(Regions.US_EAST_1)
                 .build();
 
         /* this is the endpoint returned by GetDataEndpoint API */
@@ -85,10 +83,11 @@ public final class PutMediaDemo {
 
             /* PutMedia client */
             final AmazonKinesisVideoPutMedia dataClient = AmazonKinesisVideoPutMediaClient.builder()
-                    .withRegion(DEFAULT_REGION)
+                    .withRegion(Regions.US_EAST_1)
                     .withEndpoint(URI.create(dataEndpoint))
-                    .withCredentials(AuthHelper.getSystemPropertiesCredentialsProvider())
+//                    .withCredentials(AuthHelper.getSystemPropertiesCredentialsProvider())
                     .withConnectionTimeoutInMillis(CONNECTION_TIMEOUT_IN_MILLIS)
+                    .withCredentials(new ProfileCredentialsProvider("ashvini"))
                     .build();
 
             final PutMediaAckResponseHandler responseHandler = new PutMediaAckResponseHandler()  {

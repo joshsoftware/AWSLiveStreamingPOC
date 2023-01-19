@@ -73,7 +73,7 @@ public class NativeLibraryLoader {
      */
     private boolean loadNativeLibraryIndirect(final @Nonnull String libraryName) {
         try {
-            System.loadLibrary(libraryName);
+            System.loadLibrary("KinesisVideoProducerJNI");
             mLog.trace("Success! Indirectly loaded native library {}.", libraryName);
             return true;
         } catch (final UnsatisfiedLinkError e) {

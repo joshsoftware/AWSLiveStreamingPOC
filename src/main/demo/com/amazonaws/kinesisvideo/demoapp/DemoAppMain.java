@@ -1,10 +1,10 @@
 package com.amazonaws.kinesisvideo.demoapp;
 
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.kinesisvideo.client.KinesisVideoClient;
+import com.amazonaws.kinesisvideo.common.exception.KinesisVideoException;
 import com.amazonaws.kinesisvideo.demoapp.contants.DemoTrackInfos;
 import com.amazonaws.kinesisvideo.internal.client.mediasource.MediaSource;
-import com.amazonaws.kinesisvideo.common.exception.KinesisVideoException;
-import com.amazonaws.kinesisvideo.demoapp.auth.AuthHelper;
 import com.amazonaws.kinesisvideo.java.client.KinesisVideoJavaClientFactory;
 import com.amazonaws.kinesisvideo.java.mediasource.file.AudioVideoFileMediaSource;
 import com.amazonaws.kinesisvideo.java.mediasource.file.AudioVideoFileMediaSourceConfiguration;
@@ -19,7 +19,7 @@ import static com.amazonaws.kinesisvideo.util.StreamInfoConstants.ABSOLUTE_TIMEC
  */
 public final class DemoAppMain {
     // Use a different stream name when testing audio/video sample
-    private static final String STREAM_NAME = System.getProperty("kvs-stream");
+    private static final String STREAM_NAME = "test_video_stream";
     private static final int FPS_25 = 25;
     private static final int RETENTION_ONE_HOUR = 1;
     private static final String IMAGE_DIR = "src/main/resources/data/h264/";
@@ -38,17 +38,22 @@ public final class DemoAppMain {
     public static void main(final String[] args) {
         try {
             // create Kinesis Video high level client
+//            final KinesisVideoClient kinesisVideoClient = KinesisVideoJavaClientFactory
+//                    .createKinesisVideoClient(
+//                            Regions.US_WEST_2,
+//                            AuthHelper.getSystemPropertiesCredentialsProvider());
+
             final KinesisVideoClient kinesisVideoClient = KinesisVideoJavaClientFactory
                     .createKinesisVideoClient(
-                            Regions.US_WEST_2,
-                            AuthHelper.getSystemPropertiesCredentialsProvider());
+                            Regions.US_EAST_1,
+                            new ProfileCredentialsProvider("ashvini"));
 
             // create a media source. this class produces the data and pushes it into
             // Kinesis Video Producer lower level components
             final MediaSource mediaSource = createImageFileMediaSource();
 
             // Audio/Video sample is available for playback on HLS (Http Live Streaming)
-            //final MediaSource mediaSource = createFileMediaSource();
+//            final MediaSource mediaSource = createFileMediaSource();
 
             // register media source with Kinesis Video Client
             kinesisVideoClient.registerMediaSource(mediaSource);
