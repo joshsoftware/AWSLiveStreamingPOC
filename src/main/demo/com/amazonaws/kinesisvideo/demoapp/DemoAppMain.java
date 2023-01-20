@@ -1,8 +1,8 @@
 package com.amazonaws.kinesisvideo.demoapp;
 
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.kinesisvideo.client.KinesisVideoClient;
 import com.amazonaws.kinesisvideo.common.exception.KinesisVideoException;
+import com.amazonaws.kinesisvideo.demoapp.auth.AuthHelper;
 import com.amazonaws.kinesisvideo.demoapp.contants.DemoTrackInfos;
 import com.amazonaws.kinesisvideo.internal.client.mediasource.MediaSource;
 import com.amazonaws.kinesisvideo.java.client.KinesisVideoJavaClientFactory;
@@ -38,15 +38,11 @@ public final class DemoAppMain {
     public static void main(final String[] args) {
         try {
             // create Kinesis Video high level client
-//            final KinesisVideoClient kinesisVideoClient = KinesisVideoJavaClientFactory
-//                    .createKinesisVideoClient(
-//                            Regions.US_WEST_2,
-//                            AuthHelper.getSystemPropertiesCredentialsProvider());
-
             final KinesisVideoClient kinesisVideoClient = KinesisVideoJavaClientFactory
                     .createKinesisVideoClient(
-                            Regions.US_EAST_1,
-                            new ProfileCredentialsProvider("ashvini"));
+                            Regions.US_WEST_2,
+                            AuthHelper.getSystemPropertiesCredentialsProvider());
+
 
             // create a media source. this class produces the data and pushes it into
             // Kinesis Video Producer lower level components
