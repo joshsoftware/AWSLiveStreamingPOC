@@ -26,6 +26,10 @@
             <id>lib</id>
             <url>file://${project.basedir}/lib</url>
         </repository>
+        <repository>
+            <id>dcm4che repository</id>
+            <url>https://www.dcm4che.org/maven2/</url>
+        </repository>
     </repositories>
 
     <developers>
@@ -69,6 +73,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-kinesisvideo</artifactId>
+            <version>1.12.387</version>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>
@@ -162,12 +167,20 @@
             <version>0.3.12</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/javax.media/jmf -->
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
         <dependency>
-            <groupId>javax.media</groupId>
-            <artifactId>jmf</artifactId>
-            <version>2.1.1e</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.14.1</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/xuggle/xuggle-xuggler -->
+        <dependency>
+            <groupId>xuggle</groupId>
+            <artifactId>xuggle-xuggler</artifactId>
+            <version>5.4</version>
+        </dependency>
+
 
     </dependencies>
     <build>
