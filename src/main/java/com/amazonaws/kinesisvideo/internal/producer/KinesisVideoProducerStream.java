@@ -5,10 +5,9 @@ import com.amazonaws.kinesisvideo.producer.KinesisVideoFrame;
 import com.amazonaws.kinesisvideo.producer.ProducerException;
 import com.amazonaws.kinesisvideo.producer.StreamCallbacks;
 
-import java.io.InputStream;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.InputStream;
 
 /**
  * KinesisVideo stream interface
@@ -18,12 +17,12 @@ public interface KinesisVideoProducerStream extends StreamCallbacks {
     /**
      * Ready timeout value in milliseconds for the sync API
      */
-    public static final long READY_TIMEOUT_IN_MILLISECONDS = 15000;
+    public static final long READY_TIMEOUT_IN_MILLISECONDS = 150000;
 
     /**
      * Stopped timeout value in milliseconds for the sync API
      */
-    public static final long STOPPED_TIMEOUT_IN_MILLISECONDS = 15000;
+    public static final long STOPPED_TIMEOUT_IN_MILLISECONDS = 150000;
 
     /**
      * Returns the input stream to retrieve the data from.

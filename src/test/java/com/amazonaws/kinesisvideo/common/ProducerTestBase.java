@@ -1,35 +1,35 @@
 package com.amazonaws.kinesisvideo.common;
 
-import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import static org.junit.Assert.fail;
-
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.kinesisvideo.auth.DefaultAuthCallbacks;
 import com.amazonaws.kinesisvideo.client.KinesisVideoClientConfiguration;
-import com.amazonaws.kinesisvideo.internal.producer.jni.NativeKinesisVideoProducerJni;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import com.amazonaws.kinesisvideo.demoapp.auth.AuthHelper;
 import com.amazonaws.kinesisvideo.internal.client.NativeKinesisVideoClient;
 import com.amazonaws.kinesisvideo.internal.producer.KinesisVideoProducer;
 import com.amazonaws.kinesisvideo.internal.producer.KinesisVideoProducerStream;
+import com.amazonaws.kinesisvideo.internal.producer.jni.NativeKinesisVideoProducerJni;
 import com.amazonaws.kinesisvideo.internal.service.DefaultServiceCallbacksImpl;
 import com.amazonaws.kinesisvideo.java.auth.JavaCredentialsProviderImpl;
 import com.amazonaws.kinesisvideo.java.service.CachedInfoMultiAuthServiceCallbacksImpl;
 import com.amazonaws.kinesisvideo.java.service.JavaKinesisVideoServiceClient;
-import com.amazonaws.kinesisvideo.producer.*;
 import com.amazonaws.kinesisvideo.producer.StreamInfo;
+import com.amazonaws.kinesisvideo.producer.Tag;
+import com.amazonaws.kinesisvideo.producer.*;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kinesisvideo.AmazonKinesisVideo;
 import com.amazonaws.services.kinesisvideo.AmazonKinesisVideoClientBuilder;
 import com.amazonaws.services.kinesisvideo.model.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static com.amazonaws.kinesisvideo.producer.StreamInfo.NalAdaptationFlags.NAL_ADAPTATION_FLAG_NONE;
 import static com.amazonaws.kinesisvideo.util.StreamInfoConstants.*;
-import static com.amazonaws.kinesisvideo.util.StreamInfoConstants.RECALCULATE_METRICS;
+import static org.junit.Assert.fail;
 
 public class ProducerTestBase {
     protected static final long TEST_BUFFER_DURATION = 12000L * Time.HUNDREDS_OF_NANOS_IN_A_SECOND; // 120 seconds
