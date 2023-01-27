@@ -5,16 +5,16 @@ import com.amazonaws.kinesisvideo.common.exception.KinesisVideoException;
 import com.amazonaws.kinesisvideo.common.preconditions.Preconditions;
 import com.amazonaws.kinesisvideo.internal.mediasource.OnStreamDataAvailable;
 import com.amazonaws.kinesisvideo.producer.KinesisVideoFrame;
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.util.ImageUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.imageio.ImageIO;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,10 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.amazonaws.kinesisvideo.producer.FrameFlags.FRAME_FLAG_KEY_FRAME;
-import static com.amazonaws.kinesisvideo.producer.FrameFlags.FRAME_FLAG_NONE;
 import static com.amazonaws.kinesisvideo.producer.Time.HUNDREDS_OF_NANOS_IN_A_MILLISECOND;
-import static com.amazonaws.kinesisvideo.producer.Time.NANOS_IN_A_TIME_UNIT;
-import static com.amazonaws.kinesisvideo.util.StreamInfoConstants.AUDIO_TRACK_ID;
 import static com.amazonaws.kinesisvideo.util.StreamInfoConstants.FRAME_DURATION_0_MS;
 import static com.amazonaws.kinesisvideo.util.StreamInfoConstants.VIDEO_TRACK_ID;
 
@@ -100,61 +97,52 @@ public class CameraFrameSource {
         });
     }
 
-    private void generateFrameAndNotifyListener() throws KinesisVideoException {
+    private void generateFrameAndNotifyListener() throws KinesisVideoException{
+        final Webcam webcam = Webcam.getDefault();
+        webcam.open();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         while (isRunning) {
-//            default implementation for the local files to read for stream
-//            final long startTime = System.currentTimeMillis();
-//            for (final String fileName : fileNames) {
-//                if (mkvDataAvailableCallback != null) {
-//                    frameIndex++;
-//                    mkvDataAvailableCallback.onFrameDataAvailable(createKinesisVideoFrameFromFile(fileName,
-//                            startTime));
-//                }
-//            }
-
 //            custom implementation for the frames from webcam to read for stream
-            final long startTime = System.currentTimeMillis();
-            for (final String fileName : fileNames) {
-                if (mkvDataAvailableCallback != null) {
-                    frameIndex++;
-                    mkvDataAvailableCallback.onFrameDataAvailable(createKinesisVideoFrameFromFile(fileName,
-                            startTime));
-                }
-            }
 
             try {
+                if (mkvDataAvailableCallback != null) {
+                    frameIndex++;
+                    ImageIO.write(webcam.getImage(), ImageUtils.FORMAT_JPG, byteArrayOutputStream);
+                    mkvDataAvailableCallback.onFrameDataAvailable(createKinesisVideoFrameFromFile(webcam, byteArrayOutputStream));
+                }
                 Thread.sleep(durationInMillis);
-            } catch (final InterruptedException e) {
+            } catch (final Exception e) {
                 log.error("Frame interval wait interrupted by Exception ", e);
             }
         }
+        webcam.close();
     }
 
-    private KinesisVideoFrame createKinesisVideoFrameFromFile(final String fileName, final long startTime) {
+
+
+
+    private KinesisVideoFrame createKinesisVideoFrameFromFile( Webcam fileName, ByteArrayOutputStream stream) {
         // fileName format: timecode-mediaType-isKeyFrame-frame, timecode is offset from beginning
         // 10000-audio-false-frame or 10999-video-true-frame
-        final String[] infos = fileName.split("-");
-        Preconditions.checkState(infos.length == INFO_LENGTH);
-
+//        final String[] infos = fileName.split("-");
+//        Preconditions.checkState(infos.length == INFO_LENGTH);
+        final long startTime = System.currentTimeMillis();
         final long timestamp = startTime * HUNDREDS_OF_NANOS_IN_A_MILLISECOND
-                + Long.parseLong(infos[0]) / NANOS_IN_A_TIME_UNIT
                 - frameStartMillis * HUNDREDS_OF_NANOS_IN_A_MILLISECOND;
 
-        final long trackId = VIDEO_TYPE.equals(infos[1]) ? VIDEO_TRACK_ID : AUDIO_TRACK_ID;
-        final int isKeyFrame = VIDEO_TYPE.equals(infos[1]) && Boolean.parseBoolean(infos[2])
-                ? FRAME_FLAG_KEY_FRAME
-                : FRAME_FLAG_NONE;
-        final Path path = Paths.get( "/" + fileName);
+        final long trackId = VIDEO_TRACK_ID ;
+        final int isKeyFrame = FRAME_FLAG_KEY_FRAME;
+//        final Path path = Paths.get( "/" + fileName);
         try {
-            final byte[] bytes = Files.readAllBytes(path);
+//            final byte[] bytes = Files.readAllBytes(stream.toByteArray());
             return new KinesisVideoFrame(frameIndex,
                     isKeyFrame,
                     timestamp,
                     timestamp,
                     FRAME_DURATION_0_MS * HUNDREDS_OF_NANOS_IN_A_MILLISECOND,
-                    ByteBuffer.wrap(bytes),
+                    ByteBuffer.wrap(stream.toByteArray()),
                     trackId);
-        } catch (final IOException e) {
+        } catch (Exception e) {
             log.error("Read file failed with Exception ", e);
         }
 
