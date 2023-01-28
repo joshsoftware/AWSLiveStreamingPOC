@@ -43,7 +43,7 @@ public final class StaticVideoStreamApplication {
     private static final String PUT_MEDIA_API = "/putMedia";
 
     /* the name of the stream */
-    private static final String STREAM_NAME = "test_video_stream";
+    private static final String STREAM_NAME = "FaceAndObejctDetectionStream";
 
     /* sample MKV file */
     private static final String MKV_FILE_PATH = "src/main/resources/data/mkv/clusters.mkv";
