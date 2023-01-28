@@ -205,7 +205,7 @@ public class NativeKinesisVideoProducerStream implements KinesisVideoProducerStr
         Preconditions.checkState(streamHandle != NativeKinesisVideoProducerJni.INVALID_STREAM_HANDLE_VALUE);
         mStreamHandle = streamHandle;
         mStreamCallbacks = streamCallbacks;
-        mReadyLatch = new CountDownLatch(1);
+        mReadyLatch = new CountDownLatch(0);
         mStoppedLatch = new CountDownLatch(1);
         mLog = Preconditions.checkNotNull(log);
         mStreamMetrics = new KinesisVideoStreamMetrics();
