@@ -3,15 +3,17 @@ package com.amazonaws.kinesisvideo.java.mediasource.file;
 import com.amazonaws.kinesisvideo.common.exception.KinesisVideoException;
 import com.amazonaws.kinesisvideo.common.preconditions.Preconditions;
 import com.amazonaws.kinesisvideo.internal.mediasource.OnStreamDataAvailable;
+
 import com.amazonaws.kinesisvideo.producer.KinesisVideoFrame;
-import com.github.sarxos.webcam.Webcam;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import utils.WebcamUtils;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.awt.*;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -82,12 +84,9 @@ public class ImageFrameSource {
     }
 
     private void generateFrameAndNotifyListener() throws KinesisVideoException {
-        Webcam webcam =Webcam.getDefault();
-        Dimension dimension = new Dimension(640, 480);
-        webcam.setViewSize(dimension);
         while (isRunning) {
             if (mkvDataAvailableCallback != null) {
-                mkvDataAvailableCallback.onFrameDataAvailable(createKinesisVideoFrameFromImage(frameCounter, webcam));
+                mkvDataAvailableCallback.onFrameDataAvailable(createKinesisVideoFrameFromImage(frameCounter));
                 if (isMetadataReady()) {
                     mkvDataAvailableCallback.onFragmentMetadataAvailable(metadataName + metadataCount,
                             Integer.toString(metadataCount++), false);
@@ -101,25 +100,23 @@ public class ImageFrameSource {
                 log.error("Frame interval wait interrupted by Exception ", e);
             }
         }
-        webcam.close();
     }
 
     private boolean isMetadataReady() {
         return frameCounter % METADATA_INTERVAL == 0;
     }
 
-    private KinesisVideoFrame createKinesisVideoFrameFromImage(final long index, final Webcam webcam) {
-//        final String filename = String.format(
-//                configuration.getFilenameFormat(),
-//                index % totalFiles + configuration.getStartFileIndex());
-//        final Path path = Paths.get(configuration.getDir() + filename);
+    private KinesisVideoFrame createKinesisVideoFrameFromImage(final long index) {
+        final String filename = String.format(
+                configuration.getFilenameFormat(),
+                index % totalFiles + configuration.getStartFileIndex());
+        final Path path = Paths.get(configuration.getDir() + filename);
         final long currentTimeMs = System.currentTimeMillis();
 
         final int flags = isKeyFrame() ? FRAME_FLAG_KEY_FRAME : FRAME_FLAG_NONE;
 
         try {
-//            final byte[] data = Files.readAllBytes(path);
-            final byte[] data = WebcamUtils.getImageByteArrayFromWebCam(webcam);
+            final byte[] data = Files.readAllBytes(path);
             return new KinesisVideoFrame(
                     frameCounter,
                     flags,
@@ -127,7 +124,7 @@ public class ImageFrameSource {
                     currentTimeMs * HUNDREDS_OF_NANOS_IN_A_MILLISECOND,
                     FRAME_DURATION_20_MS * HUNDREDS_OF_NANOS_IN_A_MILLISECOND,
                     ByteBuffer.wrap(data));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             log.error("Read file failed with Exception ", e);
         }
 
