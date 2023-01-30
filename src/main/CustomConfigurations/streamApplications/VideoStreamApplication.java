@@ -16,6 +16,8 @@ import com.amazonaws.regions.Regions;
 import com.github.sarxos.webcam.Webcam;
 import customMediaSource.CameraMediaSource;
 
+import java.awt.*;
+
 import static com.amazonaws.kinesisvideo.util.StreamInfoConstants.ABSOLUTE_TIMECODES;
 
 public class VideoStreamApplication {
@@ -105,6 +107,8 @@ public class VideoStreamApplication {
     private static MediaSource createCameraMediaSource() {
 
         Webcam webcam = Webcam.getDefault();
+        Dimension dimension= new Dimension(640,380);
+        webcam.setCustomViewSizes(dimension);
 
         final byte[] cpd = {(byte) 0x01, (byte) 0x42, (byte) 0xc0, (byte) 0x28, (byte) 0xff,
                 (byte) 0xe1, (byte) 0x00, (byte) 0x1a, (byte) 0x67, (byte) 0x42, (byte) 0xc0, (byte) 0x28, (byte) 0xdb,
@@ -115,14 +119,15 @@ public class VideoStreamApplication {
 
         final CameraMediaSourceConfiguration configuration =
                 new CameraMediaSourceConfiguration.Builder()
-                        .withFrameRate((int) webcam.getFPS())
+                        .withFrameRate(FPS_25)
                         .withCameraFacing(1)
                         .withCameraId("webcam")
                         .withIsEncoderHardwareAccelerated(false)
                         .withRetentionPeriodInHours(1)
-                        .withEncodingMimeType("video/avc")
+                        .withEncodingMimeType("video/h264")
                         .withNalAdaptationFlags(StreamInfo.NalAdaptationFlags.NAL_ADAPTATION_FLAG_NONE)
                         .withCodecPrivateData(cpd)
+                        .withIsAbsoluteTimecode(true)
                         .build();
 
         final CameraMediaSource mediaSource = new CameraMediaSource(STREAM_NAME);

@@ -60,7 +60,6 @@ public final class StaticVideoStreamApplication {
     private StaticVideoStreamApplication() { }
     public static void main(final String[] args) throws Exception {
         final AmazonKinesisVideo frontendClient = AmazonKinesisVideoAsyncClient.builder()
-//                .withCredentials(AuthHelper.getSystemPropertiesCredentialsProvider())
                 .withCredentials(new ProfileCredentialsProvider("ashvini"))
                 .withRegion(Regions.US_EAST_1)
                 .build();

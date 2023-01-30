@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -98,24 +99,26 @@ public class CameraFrameSource {
     }
 
     private void generateFrameAndNotifyListener() throws KinesisVideoException{
-        final Webcam webcam = Webcam.getDefault();
-        webcam.open();
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        while (isRunning) {
+        try {
+            final Webcam webcam = Webcam.getDefault();
+            Dimension dimension= new Dimension(640,380);
+            webcam.setCustomViewSizes(dimension);
+            webcam.setAutoOpenMode(true);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            while (isRunning) {
 //            custom implementation for the frames from webcam to read for stream
-
-            try {
                 if (mkvDataAvailableCallback != null) {
                     frameIndex++;
-                    ImageIO.write(webcam.getImage(), ImageUtils.FORMAT_JPG, byteArrayOutputStream);
+                    ImageIO.write(webcam.getImage(), ImageUtils.FORMAT_WBMP, byteArrayOutputStream);
                     mkvDataAvailableCallback.onFrameDataAvailable(createKinesisVideoFrameFromFile(webcam, byteArrayOutputStream));
                 }
                 Thread.sleep(durationInMillis);
-            } catch (final Exception e) {
-                log.error("Frame interval wait interrupted by Exception ", e);
+                byteArrayOutputStream.reset();
             }
+            byteArrayOutputStream.close();
+        } catch (final Exception e) {
+            log.error("Frame interval wait interrupted by Exception ", e);
         }
-        webcam.close();
     }
 
 
