@@ -58,7 +58,7 @@
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-bom</artifactId>
-                <version>1.11.602</version>
+                <version>1.12.167</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -73,7 +73,6 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-kinesisvideo</artifactId>
-            <version>1.12.387</version>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>
@@ -212,7 +211,6 @@
             <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.9.0</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
