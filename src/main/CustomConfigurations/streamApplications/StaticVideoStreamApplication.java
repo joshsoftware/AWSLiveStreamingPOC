@@ -7,11 +7,14 @@ import com.amazonaws.services.kinesisvideo.model.AckEvent;
 import com.amazonaws.services.kinesisvideo.model.FragmentTimecodeType;
 import com.amazonaws.services.kinesisvideo.model.GetDataEndpointRequest;
 import com.amazonaws.services.kinesisvideo.model.PutMediaRequest;
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamResolution;
+import com.github.sarxos.webcam.WebcamStreamer;
 
 import java.io.InputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
@@ -48,6 +51,8 @@ public final class StaticVideoStreamApplication {
     /* sample MKV file */
     private static final String MKV_FILE_PATH = "src/main/resources/data/mkv/clusters.mkv";
 
+    private static final String PATH = "src/main/resources/data/customh264/frame.mkv";
+
     /* max upload bandwidth */
     private static final long MAX_BANDWIDTH_KBPS = 15 * 1024L;
 
@@ -75,17 +80,21 @@ public final class StaticVideoStreamApplication {
             /* actually URI to send PutMedia request */
             final URI uri = URI.create(dataEndpoint + PUT_MEDIA_API);
 
-            /* input stream for sample MKV file */
-            final InputStream inputStream = Files.newInputStream(Paths.get(MKV_FILE_PATH));
-
-//            Webcam w = Webcam.getDefault();
-//            w.setViewSize(WebcamResolution.VGA.getSize());
+//            H264Creator creator = new H264Creator();
+//            creator.run();
 //
-//            ServerSocket ss=new ServerSocket(6666);
-//            Socket socket = ss.accept();
-//            CustomWebCamListener streamReader = new CustomWebCamListener(socket.getPort(), w, 0.5, true);
-//            streamReader.start();
-//            InputStream inputStream = socket.getInputStream();
+//            /* input stream for sample MKV file */
+//            final InputStream inputStream = Files.newInputStream(Paths.get(PATH));
+
+            Webcam w = Webcam.getDefault();
+            w.setViewSize(WebcamResolution.VGA.getSize());
+            w.setAutoOpenMode(true);
+
+            ServerSocket ss=new ServerSocket(6666);
+            Socket socket = ss.accept();
+            WebcamStreamer streamer = new WebcamStreamer(socket.getPort(), w, w.getFPS(), true);
+            streamer.start();
+            InputStream inputStream = socket.getInputStream();
 
             /* use a latch for main thread to wait for response to complete */
             final CountDownLatch latch = new CountDownLatch(1);

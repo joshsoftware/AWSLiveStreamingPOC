@@ -30,6 +30,10 @@
             <id>dcm4che repository</id>
             <url>https://www.dcm4che.org/maven2/</url>
         </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <developers>
@@ -204,7 +208,17 @@
             <artifactId>webcam-capture</artifactId>
             <version>0.3.12</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.github.manevolent</groupId>
+            <artifactId>ffmpeg4j</artifactId>
+            <version>4.1-1.4.4-2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bytedeco/javacv -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv</artifactId>
+            <version>1.3.1</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
