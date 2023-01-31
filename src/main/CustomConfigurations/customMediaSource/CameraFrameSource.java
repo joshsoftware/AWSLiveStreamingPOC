@@ -6,16 +6,16 @@ import com.amazonaws.kinesisvideo.common.preconditions.Preconditions;
 import com.amazonaws.kinesisvideo.internal.mediasource.OnStreamDataAvailable;
 import com.amazonaws.kinesisvideo.producer.KinesisVideoFrame;
 import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamResolution;
 import com.github.sarxos.webcam.util.ImageUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import utils.H264Creator;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,9 +23,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.amazonaws.kinesisvideo.producer.FrameFlags.FRAME_FLAG_KEY_FRAME;
+import static com.amazonaws.kinesisvideo.producer.FrameFlags.FRAME_FLAG_NONE;
 import static com.amazonaws.kinesisvideo.producer.Time.HUNDREDS_OF_NANOS_IN_A_MILLISECOND;
-import static com.amazonaws.kinesisvideo.util.StreamInfoConstants.FRAME_DURATION_0_MS;
 import static com.amazonaws.kinesisvideo.util.StreamInfoConstants.VIDEO_TRACK_ID;
 
 /**
@@ -47,6 +46,11 @@ public class CameraFrameSource {
     private int frameIndex = 0;
     private long frameStartMillis = 0;
     private List<String> fileNames = new ArrayList<>();
+    private final String metadataName = "ImageLoop";
+    private int metadataCount = 0;
+    public static final int METADATA_INTERVAL = 8;
+    private int frameCounter;
+    private static final long FRAME_DURATION_20_MS = 20L;
 
     public CameraFrameSource(final CameraMediaSourceConfiguration configuration) {
         this.configuration = configuration;
@@ -101,8 +105,7 @@ public class CameraFrameSource {
     private void generateFrameAndNotifyListener() throws KinesisVideoException{
         try {
             final Webcam webcam = Webcam.getDefault();
-            Dimension dimension= new Dimension(640,380);
-            webcam.setCustomViewSizes(dimension);
+            webcam.setViewSize(WebcamResolution.VGA.getSize());
             webcam.setAutoOpenMode(true);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             while (isRunning) {
@@ -112,6 +115,7 @@ public class CameraFrameSource {
                     ImageIO.write(webcam.getImage(), ImageUtils.FORMAT_WBMP, byteArrayOutputStream);
                     mkvDataAvailableCallback.onFrameDataAvailable(createKinesisVideoFrameFromFile(webcam, byteArrayOutputStream));
                 }
+
                 Thread.sleep(durationInMillis);
                 byteArrayOutputStream.reset();
             }
@@ -121,29 +125,32 @@ public class CameraFrameSource {
         }
     }
 
-
-
-
-    private KinesisVideoFrame createKinesisVideoFrameFromFile( Webcam fileName, ByteArrayOutputStream stream) {
-        // fileName format: timecode-mediaType-isKeyFrame-frame, timecode is offset from beginning
+    private KinesisVideoFrame createKinesisVideoFrameFromFile( Webcam webcam, ByteArrayOutputStream stream) {
+        // webcam format: timecode-mediaType-isKeyFrame-frame, timecode is offset from beginning
         // 10000-audio-false-frame or 10999-video-true-frame
-//        final String[] infos = fileName.split("-");
+//        final String[] infos = webcam.split("-");
 //        Preconditions.checkState(infos.length == INFO_LENGTH);
         final long startTime = System.currentTimeMillis();
         final long timestamp = startTime * HUNDREDS_OF_NANOS_IN_A_MILLISECOND
                 - frameStartMillis * HUNDREDS_OF_NANOS_IN_A_MILLISECOND;
 
         final long trackId = VIDEO_TRACK_ID ;
-        final int isKeyFrame = FRAME_FLAG_KEY_FRAME;
-//        final Path path = Paths.get( "/" + fileName);
+        final int isKeyFrame = FRAME_FLAG_NONE;
+
+
+//        final Path path = Paths.get( PATH);
         try {
-//            final byte[] bytes = Files.readAllBytes(stream.toByteArray());
+//            final byte[] bytes = Files.readAllBytes(path);
+            H264Creator creator = new H264Creator();
             return new KinesisVideoFrame(frameIndex,
                     isKeyFrame,
-                    timestamp,
-                    timestamp,
-                    FRAME_DURATION_0_MS * HUNDREDS_OF_NANOS_IN_A_MILLISECOND,
-                    ByteBuffer.wrap(stream.toByteArray()),
+                    startTime * HUNDREDS_OF_NANOS_IN_A_MILLISECOND,
+                    startTime * HUNDREDS_OF_NANOS_IN_A_MILLISECOND,
+                    FRAME_DURATION_20_MS * HUNDREDS_OF_NANOS_IN_A_MILLISECOND,
+//                    ByteBuffer.wrap(creator.getEncodeH264Frame()),
+//                    H264Creator.getImageByteBuffer(webcam),
+//                    ByteBuffer.wrap(stream.toByteArray()),
+                    webcam.getImageBytes(),
                     trackId);
         } catch (Exception e) {
             log.error("Read file failed with Exception ", e);
@@ -154,5 +161,8 @@ public class CameraFrameSource {
 
     private void stopFrameGenerator() {
 
+    }
+    private boolean isMetadataReady() {
+        return frameCounter % METADATA_INTERVAL == 0;
     }
 }

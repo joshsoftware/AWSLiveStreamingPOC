@@ -31,7 +31,7 @@ public class CustomWebCamListener implements ThreadFactory, WebcamListener {
 
         @Override
         public void run() {
-            try (ServerSocket server = new ServerSocket(port, 50, InetAddress.getByName("0.0.0.0"))) {
+            try (ServerSocket server = new ServerSocket(port, 50, InetAddress.getByName("localhost"))) {
                 while (started.get()) {
                     executor.execute(new Connection(server.accept()));
                 }

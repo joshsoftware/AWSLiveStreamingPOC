@@ -49,10 +49,10 @@ public class VideoStreamApplication {
 
             // create a media source. this class produces the data and pushes it into
             // Kinesis Video Producer lower level components
-            final MediaSource mediaSource = createCameraMediaSource();
+//            final MediaSource mediaSource = createCameraMediaSource();
 
             // Audio/Video sample is available for playback on HLS (Http Live Streaming)
-//            final MediaSource mediaSource = createFileMediaSource();
+            final MediaSource mediaSource = createCameraMediaSource();
 
             // register media source with Kinesis Video Client
             kinesisVideoClient.registerMediaSource(mediaSource);
