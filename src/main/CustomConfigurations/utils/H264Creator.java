@@ -25,7 +25,7 @@ public class H264Creator implements Runnable{
     private static final String PATH = "src/main/resources/data/customh264";
     private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH_mm_ss");
     private static final String videoFormat = "mkv";
-    private static final int COUNT_FRAME = 375;
+    private static final int COUNT_FRAME = 25;
     private static Webcam webcam;
 
     static {
@@ -74,7 +74,6 @@ public class H264Creator implements Runnable{
         }
         writer.close();
         return Files.newInputStream(Paths.get(PATH+"/frame.mkv"));
-//        return null;
     }
     public static ByteBuffer getImageByteBuffer(Webcam webcam) throws FrameGrabber.Exception {
 
