@@ -10,7 +10,6 @@ import com.github.sarxos.webcam.WebcamResolution;
 import com.github.sarxos.webcam.util.ImageUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import utils.H264Creator;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.imageio.ImageIO;
@@ -141,7 +140,7 @@ public class CameraFrameSource {
 //        final Path path = Paths.get( PATH);
         try {
 //            final byte[] bytes = Files.readAllBytes(path);
-            H264Creator creator = new H264Creator();
+//            H264Creator creator = new H264Creator();
             return new KinesisVideoFrame(frameIndex,
                     isKeyFrame,
                     startTime * HUNDREDS_OF_NANOS_IN_A_MILLISECOND,

@@ -10,6 +10,7 @@ import com.xuggle.xuggler.IVideoPicture;
 import com.xuggle.xuggler.video.ConverterFactory;
 import com.xuggle.xuggler.video.IConverter;
 import org.bytedeco.javacv.FrameGrabber;
+import org.joda.time.DateTime;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -28,14 +29,24 @@ public class H264Creator implements Runnable{
     private static final int COUNT_FRAME = 25;
     private static Webcam webcam;
 
+    public volatile String writeFile;
+
     static {
         webcam = Webcam.getDefault();
         webcam.setAutoOpenMode(true);
         webcam.setViewSize(WebcamResolution.VGA.getSize());
     }
+
+    public H264Creator(String fileName) {
+        this.writeFile = fileName;
+    }
+
+    public H264Creator() {
+    }
+
     @Override
     public void run() {
-        File saveVideo = new File(PATH, String.format("%s.%s", "frame",videoFormat));
+        File saveVideo = new File(PATH, writeFile);
 
         IMediaWriter writer = ToolFactory.makeWriter(saveVideo.getAbsolutePath());
         Dimension size = webcam.getViewSize();
@@ -55,8 +66,8 @@ public class H264Creator implements Runnable{
     }
 
     public InputStream getInputStreamOfMkvFile() throws IOException {
-
-        File saveVideo = new File(PATH, String.format("%s.%s", "frame",videoFormat));
+        System.out.println("start time:{}" + DateTime.now());
+        File saveVideo = new File(PATH, writeFile);
 
         IMediaWriter writer = ToolFactory.makeWriter(saveVideo.getAbsolutePath());
         Dimension size = webcam.getViewSize();
@@ -73,7 +84,8 @@ public class H264Creator implements Runnable{
             writer.encodeVideo(0, frame);
         }
         writer.close();
-        return Files.newInputStream(Paths.get(PATH+"/frame.mkv"));
+        System.out.println("end time:{}" + DateTime.now());
+        return Files.newInputStream(Paths.get(PATH+"/"+writeFile));
     }
     public static ByteBuffer getImageByteBuffer(Webcam webcam) throws FrameGrabber.Exception {
 
@@ -86,42 +98,4 @@ public class H264Creator implements Runnable{
         return frame.getByteBuffer();
     }
 
-    public static void main(String[] args) {
-//        new Thread(new H264Creator()).start();
-
-        try {
-            H264Creator creator = new H264Creator();
-             creator.getInputStreamOfMkvFile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-//    final Java2DFrameConverter converter = new Java2DFrameConverter();
-//
-//    // Show drone camera
-//    FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(webcam.getName());
-//
-//        grabber.setFrameRate(25);
-//        grabber.setFormat(".h264");
-//        grabber.setVideoBitrate(25000000);
-//        grabber.setVideoOption("preset", "ultrafast");
-//        grabber.setNumBuffers(0);
-//
-//        grabber.start();
-//
-//    // Grab frames as long as the thread is running
-//        while(true){
-//        final Frame frame = grabber.grab();
-//        if (frame != null) {
-//            final BufferedImage bufferedImage = converter.convert(frame);
-//            if (bufferedImage != null) {
-//                _cameraView.setImage(SwingFXUtils.toFXImage(bufferedImage, null));
-//            }
-//        }
-//        Thread.sleep( 1000 / _frameRate );// don't grab frames faster than they are provided
-//        grabber.flush();
-//    }
-//        _grabber.close();
 }

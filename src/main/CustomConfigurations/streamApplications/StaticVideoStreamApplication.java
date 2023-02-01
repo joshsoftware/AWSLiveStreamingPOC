@@ -7,10 +7,14 @@ import com.amazonaws.services.kinesisvideo.model.AckEvent;
 import com.amazonaws.services.kinesisvideo.model.FragmentTimecodeType;
 import com.amazonaws.services.kinesisvideo.model.GetDataEndpointRequest;
 import com.amazonaws.services.kinesisvideo.model.PutMediaRequest;
+import com.amazonaws.util.StringUtils;
+import org.joda.time.DateTime;
 import utils.H264Creator;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
@@ -46,9 +50,7 @@ public final class StaticVideoStreamApplication {
 
     /* sample MKV file */
     private static final String MKV_FILE_PATH = "src/main/resources/data/mkv/clusters.mkv";
-
-    private static final String PATH = "src/main/resources/data/customh264/frame.mkv";
-
+    private static final String PATH = "src/main/resources/data/customh264/";
     /* max upload bandwidth */
     private static final long MAX_BANDWIDTH_KBPS = 15 * 1024L;
 
@@ -57,6 +59,8 @@ public final class StaticVideoStreamApplication {
 
     /* connect timeout */
     private static final int CONNECTION_TIMEOUT_IN_MILLIS = 10_000;
+    public static String readFileName;
+    public static String writeFileName;
 
     private StaticVideoStreamApplication() { }
     public static void main(final String[] args) throws Exception {
@@ -71,28 +75,30 @@ public final class StaticVideoStreamApplication {
                         .withStreamName(STREAM_NAME)
                         .withAPIName("PUT_MEDIA")).getDataEndpoint();
 
+
+//        Webcam w = Webcam.getDefault();
+//        w.setViewSize(WebcamResolution.VGA.getSize());
+//        w.setAutoOpenMode(true);
+
+//        WebcamStreamer streamer = new WebcamStreamer(53333, w, w.getFPS(), true);
+//        streamer.start();
+//        Socket socket = new Socket("127.0.0.1", 53333);
+
+        if (StringUtils.isNullOrEmpty(readFileName)) {
+            readFileName = "READ.mkv";
+            H264Creator creator = new H264Creator(readFileName);
+            creator.getInputStreamOfMkvFile();
+        }
+
+        String bufferFileName;
+
         /* send the same MKV file over and over */
         while (true) {
             /* actually URI to send PutMedia request */
             final URI uri = URI.create(dataEndpoint + PUT_MEDIA_API);
-
-            H264Creator creator = new H264Creator();
-//            creator.run();
-//
-//            /* input stream for sample MKV file */
-//            final InputStream inputStream = Files.newInputStream(Paths.get(PATH));
-
-            final InputStream inputStream = creator.getInputStreamOfMkvFile();
-
-//            Webcam w = Webcam.getDefault();
-//            w.setViewSize(WebcamResolution.VGA.getSize());
-//            w.setAutoOpenMode(true);
-//
-//            ServerSocket ss=new ServerSocket(6666);
-//            Socket socket = ss.accept();
-//            WebcamStreamer streamer = new WebcamStreamer(socket.getPort(), w, w.getFPS(), true);
-//            streamer.start();
-//            InputStream inputStream = socket.getInputStream();
+            /* input stream for sample MKV file */
+            final InputStream inputStream = Files.newInputStream(Paths.get(PATH + readFileName));
+//            final InputStream inputStream = creator.getInputStreamOfMkvFile();
 
             /* use a latch for main thread to wait for response to complete */
             final CountDownLatch latch = new CountDownLatch(1);
@@ -134,9 +140,12 @@ public final class StaticVideoStreamApplication {
                             .withProducerStartTimestamp(Date.from(Instant.now())),
                     responseHandler);
 
+            H264Creator creator = new H264Creator(readFileName);
+            creator.run();
+
             /* wait for request/response to complete */
             latch.await();
-
+            System.out.println("end time:{}" + DateTime.now());
             /* close the client */
             dataClient.close();
         }
